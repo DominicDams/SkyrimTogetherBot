@@ -1,0 +1,82 @@
+Parameters:
+  InstanceType:
+    Type: String
+    Default: "c5.large"
+  ContainerImage:
+    Type: String
+    Default: "docker.io/tiltedphoques/st-game-server"
+  Port:
+    Type: Number
+    Default: "10578"
+  Protocal:
+    Type: String
+    Default: "udp"
+    AllowedValues:
+      - "udp"
+      - "tcp"
+  VolumeSize:
+    Type: Number
+    Default: "8"
+      
+
+Resources:
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: "SkyrimTogetherCluster"
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+      -
+        Name: "SkyrimTogether"
+        Image: !Ref ContainerImage
+        MemoryReservation: "2048"
+        PortMappings:
+        -
+          ContainerPort: !Ref Port
+          HostPort: !Ref Port
+          Protocol: !Ref Protocal
+
+  ECSService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref ECSCluster
+      LaunchType: "EC2"
+      SchedulingStrategy: "DAEMON"
+      TaskDefinition: !Ref TaskDefinition
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Open port for the server to listen on
+      SecurityGroupIngress:
+      - IpProtocol: !Ref Protocal
+        FromPort: !Ref Port
+        ToPort: !Ref Port
+        CidrIp: "0.0.0.0/0"
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      BlockDeviceMappings:
+      - DeviceName: "/dev/xvda"
+        Ebs:
+          VolumeType: "gp2"
+          DeleteOnTermination: "true"
+          VolumeSize: !Ref VolumeSize
+      ImageId: "ami-a64d9ade"
+      InstanceType: !Ref InstanceType
+      UserData: 
+        Fn::Base64:
+          !Join
+          - ''
+          - - "#!/bin/bash\n"
+            - 'echo "ECS_CLUSTER='
+            - !Ref ECSCluster
+            - '" >> /etc/ecs/ecs.config'
+      SecurityGroups:
+      - !Ref SecurityGroup
+      IamInstanceProfile: "ecsInstanceRole"
+Outputs:
+  InstanceId:
+    Value: !Ref Instance
+  
