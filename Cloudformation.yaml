@@ -2,9 +2,6 @@ Parameters:
   InstanceType:
     Type: String
     Default: "c5.large"
-  ContainerImage:
-    Type: String
-    Default: "docker.io/tiltedphoques/st-game-server"
   Port:
     Type: Number
     Default: "10578"
@@ -30,7 +27,7 @@ Resources:
       ContainerDefinitions:
       -
         Name: "SkyrimTogether"
-        Image: !Ref ContainerImage
+        Image: "docker.io/tiltedphoques/st-game-server"
         MemoryReservation: "2048"
         PortMappings:
         -
@@ -54,6 +51,26 @@ Resources:
         FromPort: !Ref Port
         ToPort: !Ref Port
         CidrIp: "0.0.0.0/0"
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2008-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role'
+  InstanceProfile: 
+    Type: "AWS::IAM::InstanceProfile"
+    Properties: 
+      Path: "/"
+      Roles: 
+        - 
+          Ref: "Role"
   Instance:
     Type: AWS::EC2::Instance
     Properties:
@@ -75,7 +92,7 @@ Resources:
             - '" >> /etc/ecs/ecs.config'
       SecurityGroups:
       - !Ref SecurityGroup
-      IamInstanceProfile: "ecsInstanceRole"
+      IamInstanceProfile: !Ref InstanceProfile
 Outputs:
   InstanceId:
     Value: !Ref Instance
