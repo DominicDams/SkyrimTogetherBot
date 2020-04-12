@@ -1,7 +1,7 @@
 import discord
 import boto3
 
-f = open("together.creds", "r")
+f = open("Skyrim.creds", "r")
 
 instance_id = f.readline().rstrip()
 
@@ -21,7 +21,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content == '!together':
+    if message.content == '!skyrim start':
         print(message.content)
         try:
             ec2.start_instances(InstanceIds=[instance_id], DryRun=False)
@@ -29,7 +29,7 @@ async def on_message(message):
         except Exception as e:
             await message.channel.send('Failed to start server! ' + str(e))
 
-    elif message.content == '!apart':
+    elif message.content == '!skyrim stop':
         print(message.content)
         try:
             ec2.stop_instances(InstanceIds=[instance_id], DryRun=False)
@@ -37,7 +37,7 @@ async def on_message(message):
         except Exception as e:
             await message.channel.send('Failed to stop server! ' + str(e))
 
-    elif message.content == '!skyrim':
+    elif message.content == '!skyrim status':
         try:
             print(message.content)
             instance = ec2_resource.Instance(instance_id)
@@ -47,7 +47,7 @@ async def on_message(message):
         except Exception as e:
             await message.channel.send('Failed to fetch server status! ' + str(e))
 
-    elif message.content == '!ip':
+    elif message.content == '!skyrim ip':
         print(message.content)
         try:
             instance = ec2_resource.Instance(instance_id)
