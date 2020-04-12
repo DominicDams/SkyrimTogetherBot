@@ -19,8 +19,6 @@ Parameters:
 Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
-    Properties:
-      ClusterName: "SkyrimTogetherCluster"
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
