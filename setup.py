@@ -2,7 +2,7 @@ import boto3
 
 import time
 
-f = open("aws_settings.conf",r)
+f = open("aws_settings.conf", "r")
 
 region_name = f.readline()
 
